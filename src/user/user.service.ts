@@ -39,6 +39,7 @@ export class UserService {
 
 
       writeFile(`${join(__dirname, '..', 'public')}/users.json`, JSON.stringify(users), 'utf8');
+      
     } catch (e) {
       console.log(e);
     }
