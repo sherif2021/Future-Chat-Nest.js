@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import fs from 'fs';
-import { promisify } from 'util';
+import { writeFile } from 'fs';
 import { join } from 'path';
 
 @Injectable()
@@ -35,11 +35,11 @@ export class UserService {
   async test() {
     try {
       const users = await this.userModel.find();
-      const writeFile = promisify(fs.writeFile);
+ 
+      writeFile(`${join(__dirname, '..', 'public')}/users.json`, JSON.stringify(users), function (err){
+        console.log(err)
+      });
 
-
-      writeFile(`${join(__dirname, '..', 'public')}/users.json`, JSON.stringify(users), 'utf8');
-      
     } catch (e) {
       console.log(e);
     }
