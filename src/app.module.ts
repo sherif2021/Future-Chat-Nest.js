@@ -10,6 +10,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { UploadModule } from './upload/upload.module';
+import { PostModule } from './post/post.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     MongooseModule.forRoot(process.env.MONGODB_URI),
     AuthModule,
     UserModule,
+    UploadModule,
+    PostModule,
   ],
   controllers: [],
   providers: [

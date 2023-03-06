@@ -1,11 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
-import fs from 'fs';
-import { writeFile } from 'fs';
-import { join } from 'path';
 
 @Injectable()
 export class UserService {
@@ -16,7 +13,11 @@ export class UserService {
 
   async getUser(userId: string): Promise<User> {
 
-    const user = await this.userModel.findById(userId).select('-isBlock -fcm -roles').exec();
+    const user = await this.userModel.findById(userId).select('-fcm -roles').exec();
+
+    console.log(userId);
+
+    if (!user) throw new NotFoundException('This User Not Found');
 
     if (user.isBlock) throw new BadRequestException('Your Account has been Blocked.');
 
@@ -30,18 +31,5 @@ export class UserService {
     if (!user) throw new BadRequestException('This Profile Not Exist.');
 
     return user;
-  }
-
-  async test() {
-    try {
-      const users = await this.userModel.find();
- 
-      writeFile(`${join(__dirname, '../../', 'public')}/users.json`, JSON.stringify(users), function (err){
-        console.log(err)
-      });
-
-    } catch (e) {
-      console.log(e);
-    }
   }
 }
