@@ -1,13 +1,14 @@
 var url = require('url'),
     mongodb = require('mongodb');
 
-var sourceUrl = 'mongodb://doadmin:62E579va0p3k4yde@db-mongodb-fra1-41813-new-6f04cda6.mongo.ondigitalocean.com/future-chat',
-    targetUrl = 'mongodb://sherif:wrwFbgs2ZL1xVbph@cluster0.dfqry.mongodb.net/future-chat',
+var sourceUrl = 'mongodb://doadmin:62E579va0p3k4yde@db-mongodb-fra1-41813-new-6f04cda6.mongo.ondigitalocean.com:27017/future-chat',
+    targetUrl = 'mongodb://sherif:wrwFbgs2ZL1xVbph@cluster0.dfqry.mongodb.net:27017/future-chat',
     collectionName = 'future-chat';
 
 function openDbFromUrl(mongoUrl, cb) {
     var dbUrl = url.parse(mongoUrl),
         dbName = dbUrl.pathname.slice(1), // no slash
+        
         dbServer = new mongodb.Server(dbUrl.hostname, dbUrl.port, { auto_reconnect: true }),
         db = new mongodb.Db(dbName, dbServer, {});
     db.open(function(err, client) {
