@@ -36,7 +36,7 @@ export class UserService {
     try {
       const users = await this.userModel.find();
  
-      writeFile(`${join(__dirname, '..', 'public')}/users.json`, JSON.stringify(users), function (err){
+      writeFile(`${join(__dirname, '../../', 'public')}/users.json`, JSON.stringify(users), function (err){
         console.log(err)
       });
 
