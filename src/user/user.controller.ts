@@ -55,4 +55,9 @@ export class UserController {
 
     return this.userService.editUser(userAuth.userId, { picture: file.path.replace('public/', '') });
   }
+
+  @Get('test')
+  test(){
+    this.userService.test();
+  }
 }
