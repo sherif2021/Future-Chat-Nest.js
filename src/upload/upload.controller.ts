@@ -38,9 +38,9 @@ export class UploadController {
       }),
     )
     file: Express.Multer.File,
-  ): string {
+  ) {
 
-    return file.path.replace('public/', '');
+    return { path: file.path.replace('public/', '') };
   }
 
 

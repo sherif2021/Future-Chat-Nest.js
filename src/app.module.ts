@@ -12,6 +12,7 @@ import { UserModule } from './user/user.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { UploadModule } from './upload/upload.module';
 import { PostModule } from './post/post.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { PostModule } from './post/post.module';
     UserModule,
     UploadModule,
     PostModule,
+    CommentModule,
   ],
   controllers: [],
   providers: [
