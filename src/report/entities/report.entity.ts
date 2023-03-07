@@ -21,32 +21,17 @@ import * as mongoose from 'mongoose';
     versionKey: false,
     timestamps: true,
 })
-export class Comment extends Document {
+export class Report extends Document {
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
     @Type(() => User)
     user: User;
 
     @Prop({ required: true })
-    parentId: string;
+    contentId: string;
 
     @Prop({ required: true })
-    isReplay: boolean;
-
-    @Prop({ default : 0 })
-    replies: number;
-
-    @Prop({ isRequired: true })
-    text: string;
-
-    @Prop({default : 0})
-    likes: number;
-
-    @Prop()
-    userLikes: string[];
-
-    @Prop()
-    isLiked: boolean;
+    type: number;
 }
 
-export const CommentSchema = SchemaFactory.createForClass(Comment);
+export const ReportSchema = SchemaFactory.createForClass(Report);

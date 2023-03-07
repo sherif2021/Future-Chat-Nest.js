@@ -47,4 +47,10 @@ export class PostController {
   unLikePost(@UserJwt() userAuth: UserAuth, @Body("postId") postId: string) {
     return this.postService.unLikePost(userAuth.userId, postId);
   }
+
+  @Post('share')
+  @UseGuards(UserGuard)
+  sharePost(@UserJwt() userAuth: UserAuth, @Body("postId") postId: string) {
+    return this.postService.sharePost(userAuth.userId, postId);
+  }
 }

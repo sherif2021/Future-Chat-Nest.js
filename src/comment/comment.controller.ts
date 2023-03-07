@@ -5,6 +5,7 @@ import { UserAuth } from 'src/auth/common/user-auth';
 import { UserJwt } from 'src/auth/common/user.decorato';
 import { UserGuard } from 'src/auth/gurards/user.guard';
 import { PaginationQueryDto } from 'src/common/pagination-query.dto';
+import { CreateReplayDto } from './dto/create-replay.dto';
 
 @Controller('comment')
 export class CommentController {
@@ -18,11 +19,15 @@ export class CommentController {
 
   @Post('replay')
   @UseGuards(UserGuard)
-  createReplay(@UserJwt() userAuth: UserAuth, @Body() createCommentDto: CreateCommentDto) {
-    return this.commentService.createComment(userAuth.userId, createCommentDto);
+  createReplay(@UserJwt() userAuth: UserAuth, @Body() createReplayDto: CreateReplayDto) {
+    return this.commentService.createReplay(userAuth.userId, createReplayDto);
   }
 
-
+  @Get('replies/:id')
+  @UseGuards(UserGuard)
+  getCommentReplies(@Param('id') postId: string, @UserJwt() userAuth: UserAuth, @Query() paginationQueryDto: PaginationQueryDto) {
+    return this.commentService.getCommentReplies(postId, userAuth.userId, paginationQueryDto);
+  }
 
   @Get(':id')
   @UseGuards(UserGuard)

@@ -39,8 +39,7 @@ export class CommentService {
     comment.isLiked = false;
     comment.likes = 0;
 
-    const commentCounts = await this.calculatePostComments(createCommentDto.postId);
-   // comment.
+    this.calculatePostComments(createCommentDto.postId);
     return comment;
   }
 
@@ -71,23 +70,40 @@ export class CommentService {
 
   async editComment(userId: string, commentId: string, text: string): Promise<Comment> {
 
-    const comment = await this.commentModel.findOne({ _id: commentId, user: userId }, { text }, { returnOriginal: false }).select('-userLikes').populate('user', 'firstName lastName picture').exec();
+    const comment = await this.commentModel.findOneAndUpdate({ _id: commentId, user: userId }, { text }, { returnOriginal: false }).select('-userLikes').populate('user', 'firstName lastName picture').exec();
 
-    if (!comment) throw new NotFoundException('This Comment Not Found.');
+    if (!comment) throw new NotFoundException('This Comment Or Replay Not Found.');
 
-    return comment;
+    return (await this.getCommentsData([comment], userId))[0];
   }
 
   async deleteComment(userId: string, commentId: string) {
 
-    const comment = await this.commentModel.findOneAndDelete({ _id: commentId, user: userId }).select('_id').exec();
+    const comment = await this.commentModel.findOneAndDelete({ _id: commentId, user: userId }).select('_id isReplay parentId').exec();
 
-    if (!comment) throw new NotFoundException('This Comment Not Found.');
-    this.commentModel.deleteMany({ parentId: commentId, isReplay: true }).exec();
+    if (!comment) throw new NotFoundException('This Comment Or Repaly Not Found.');
+
+    if (comment.isReplay == false) {
+      this.commentModel.deleteMany({ parentId: commentId, isReplay: true }).exec();
+      this.calculatePostComments(comment.parentId);
+    }else{
+      this.calculateCommentReplies(comment.parentId);
+    }
   }
 
   async getPostComments(postId: string, userId: string, paginationQueryDto: PaginationQueryDto): Promise<Comment[]> {
     const comments = await this.commentModel.find({ parentId: postId, isReplay: false })
+      .sort({ 'createdAt': -1 })
+      .skip(paginationQueryDto.offset)
+      .limit(paginationQueryDto.limit)
+      .select('-userLikes')
+      .populate('user', 'firstName lastName picture').exec();
+
+    return this.getCommentsData(comments, userId);
+  }
+
+  async getCommentReplies(commentId: string, userId: string, paginationQueryDto: PaginationQueryDto): Promise<Comment[]> {
+    const comments = await this.commentModel.find({ parentId: commentId, isReplay: true })
       .sort({ 'createdAt': -1 })
       .skip(paginationQueryDto.offset)
       .limit(paginationQueryDto.limit)
@@ -135,7 +151,7 @@ export class CommentService {
   private async calculateCommentReplies(commentId: string): Promise<number> {
 
     const count = await this.commentModel.find({ parentId: commentId, isReplay: true }).count();
-    this.commentModel.updateOne({ _id: commentId }, { comments: count }).exec();
+    this.commentModel.updateOne({ _id: commentId }, { replies: count }).exec();
 
     return count;
   }

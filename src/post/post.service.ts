@@ -6,12 +6,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { User } from 'src/user/entities/user.entity';
 import { PaginationQueryDto } from 'src/common/pagination-query.dto';
+import { PostShare } from './entities/share-post.entity';
 
 @Injectable()
 export class PostService {
 
   constructor(@InjectModel(Post.name) private postModel: Model<Post>,
-    @InjectModel(User.name) private userModel: Model<User>
+    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(PostShare.name) private postShareModel: Model<PostShare>
   ) { }
 
   async createPost(userId: string, createPostDto: CreatePostDto): Promise<Post> {
@@ -68,7 +70,7 @@ export class PostService {
     if (!post) throw new NotFoundException('This Post Not Found.');
 
     // send notication to post owner
-    
+
     return (await this.getPostsData([post], userId))[0];
 
   }
@@ -83,6 +85,26 @@ export class PostService {
 
     return (await this.getPostsData([post], userId))[0];
 
+  }
+
+  async sharePost(userId: string, postId: string): Promise<Post> {
+
+    const post = await this.postModel.findById(postId).select('-userLikes').populate('user', 'firstName lastName picture').exec();
+
+    if (!post) throw new NotFoundException('This Post Not Found.');
+
+    await this.postShareModel.updateOne(
+      { userId, postId },
+      { userId, postId },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    ).exec();
+
+    const shares = await this.calculatePostShares(postId);
+    post.shares = shares;
+
+
+    // send notifcation
+    return post;
   }
 
   private async getPostsData(posts: Post[], userId?: string,): Promise<Post[]> {
@@ -107,5 +129,13 @@ export class PostService {
       }
     }
     return posts;
+  }
+
+  private async calculatePostShares(postId: string): Promise<number> {
+
+    const count = await this.postShareModel.find({ postId }).count();
+    this.postModel.updateOne({ _id: postId }, { shares: count }).exec();
+
+    return count;
   }
 }

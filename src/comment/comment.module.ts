@@ -11,12 +11,8 @@ import { Comment, CommentSchema } from './entities/comment.entity';
   providers: [CommentService],
   imports: [
     MongooseModule.forFeature([
-      { name: Post.name, schema: PostSchema }
-    ]),
-    MongooseModule.forFeature([
-      { name: Comment.name, schema: CommentSchema }
-    ]),
-    MongooseModule.forFeature([
+      { name: Post.name, schema: PostSchema },
+      { name: Comment.name, schema: CommentSchema },
       { name: User.name, schema: UserSchema }
     ]),
   ]

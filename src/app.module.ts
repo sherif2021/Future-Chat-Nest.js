@@ -13,6 +13,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { UploadModule } from './upload/upload.module';
 import { PostModule } from './post/post.module';
 import { CommentModule } from './comment/comment.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { CommentModule } from './comment/comment.module';
     UploadModule,
     PostModule,
     CommentModule,
+    ReportModule,
   ],
   controllers: [],
   providers: [
