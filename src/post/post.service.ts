@@ -51,7 +51,7 @@ export class PostService {
   }
 
   async getUserPosts(userId: string, paginationQueryDto: PaginationQueryDto): Promise<Post[]> {
-    const posts = await this.postModel.find({ user: userId, type: 1 })
+    const posts = await this.postModel.find({ user: userId })
       .sort({ 'createdAt': -1 })
       .skip(paginationQueryDto.offset)
       .limit(paginationQueryDto.limit)

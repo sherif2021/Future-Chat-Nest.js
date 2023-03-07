@@ -1,4 +1,4 @@
-import { Body, Controller, FileTypeValidator, Get, MaxFileSizeValidator, ParseFilePipe, Patch, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, FileTypeValidator, Get, MaxFileSizeValidator, ParseFilePipe, Patch, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserGuard } from 'src/auth/gurards/user.guard';
 import { UserAuth } from 'src/auth/common/user-auth';
@@ -25,34 +25,9 @@ export class UserController {
     return this.userService.editUser(userAuth.userId, updateUserDto);
   }
 
-  @Patch('picture')
+  @Post('search')
   @UseGuards(UserGuard)
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './public/pictures',
-        filename(req, file, callback) {
-
-          const originalameSplit = file.originalname.split('.');
-
-          callback(null, `${uid(40)}.${originalameSplit.at(originalameSplit.length - 1)}`);
-        },
-      }),
-    }),
-  )
-  uploadFile(
-    @UserJwt() userAuth: UserAuth,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 10000000 }),
-          new FileTypeValidator({ fileType: RegExp('jpeg||jpg||png') }),
-        ],
-      }),
-    )
-    file: Express.Multer.File,
-  ): Promise<User> {
-
-    return this.userService.editUser(userAuth.userId, { picture: file.path.replace('public/', '') });
+  search(@UserJwt() userAuth: UserAuth, @Body('text') text: string){
+    return this.userService.search(userAuth.userId, text);
   }
 }

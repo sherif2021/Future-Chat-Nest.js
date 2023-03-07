@@ -14,6 +14,8 @@ import { UploadModule } from './upload/upload.module';
 import { PostModule } from './post/post.module';
 import { CommentModule } from './comment/comment.module';
 import { ReportModule } from './report/report.module';
+import { StoryModule } from './story/story.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -53,6 +55,8 @@ import { ReportModule } from './report/report.module';
     PostModule,
     CommentModule,
     ReportModule,
+    StoryModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [],
   providers: [

@@ -32,4 +32,18 @@ export class UserService {
 
     return user;
   }
+
+  async search(userId: string, text: string) {
+
+    const users = await this.userModel
+      .find({ _id: { $ne: userId }, $or: [{ firstName: { $regex: '.*' + text + '.*', $options: 'i' } }, { lastName: { $regex: '.*' + text + '.*', $options: 'i' } }] })
+      .limit(20)
+      .select('firstName lastName picture')
+      .exec();
+
+    return {
+      'users': users,
+      'groups': [],
+    }
+  }
 }

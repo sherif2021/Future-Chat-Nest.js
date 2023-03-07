@@ -22,8 +22,8 @@ export class ReportService {
   async reportUser(userId: string, reportingUserId: string) {
 
     const data = await Promise.all([
-      this.userModel.findById(userId).select('_id'),
-      this.userModel.findById(reportingUserId).select('_id')
+      this.userModel.findById(userId).select('_id').exec(),
+      this.userModel.findById(reportingUserId).select('_id').exec()
     ]);
 
     const user = data[0];
