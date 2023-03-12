@@ -49,6 +49,9 @@ export class User extends Document {
 
     @Prop()
     roles: string[];
+
+    @Prop({type : Object})
+    stories : object;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

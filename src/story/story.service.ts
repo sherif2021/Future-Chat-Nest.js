@@ -41,16 +41,40 @@ export class StoryService {
     if (!story) throw new NotFoundException('This Story Not Found.');
   }
 
-  async getStoreis(userId: string, paginationQueryDto: PaginationQueryDto): Promise<Story[]> {
+  async getStoreis(userId: string, paginationQueryDto: PaginationQueryDto): Promise<User[]> {
 
-    const sotires = await this.storyModel.find({ user: userId })
-      .sort({ 'createdAt': -1 })
-      .skip(paginationQueryDto.offset)
-      .limit(paginationQueryDto.limit)
-      .select('-userViews')
-      .populate('user', 'firstName lastName picture').exec();
+    const userStoreis = await this.storyModel.aggregate(
+      [
+        { "$group": { "_id": "$user" } },
+        { "$skip": paginationQueryDto.offset },
+        { "$limit": paginationQueryDto.limit }
+      ]
+    ).exec();
 
-    return this.getStoriesData(sotires, userId);
+    if (userStoreis.length == 0) return [];
+
+    const data = await Promise.all([
+      this.userModel.find({ _id: { $in: userStoreis.map(e => e._id) } }).select('firstName lastName picture').exec(),
+      this.storyModel.find({ user: { $in: userStoreis.map(e => e._id) } }).sort({ 'createdAt': -1 }).select('-userViews').exec(),
+    ]);
+
+    const users = data[0];
+    const stories = data[1];
+
+    await this.getStoriesData(stories, userId);
+
+    for (const user of users) {
+      const allUserStories: Story[] = [];
+
+      for (const story of stories) {
+        if (story.user == user.id) {
+          allUserStories.push(story);
+        }
+      }
+      user.stories = allUserStories;
+      
+    }
+    return users;
   }
 
   async viewStory(userId: string, storyId: string): Promise<Story> {
@@ -64,7 +88,7 @@ export class StoryService {
 
   }
 
-  private async getStoriesData(stories: Story[], userId?: string,): Promise<Story[]> {
+  private async getStoriesData(stories: Story[], userId?: string,) {
 
     if (stories.length > 0) {
       const storiesData = await this.storyModel.aggregate([
@@ -85,7 +109,6 @@ export class StoryService {
         }
       }
     }
-    return stories;
   }
 
   // when story deleted send notification to user

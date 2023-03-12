@@ -16,6 +16,7 @@ import { CommentModule } from './comment/comment.module';
 import { ReportModule } from './report/report.module';
 import { StoryModule } from './story/story.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     ReportModule,
     StoryModule,
     ScheduleModule.forRoot(),
+    ChatModule,
   ],
   controllers: [],
   providers: [

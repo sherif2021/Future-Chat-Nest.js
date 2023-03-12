@@ -22,4 +22,8 @@ export class CreatePostDto {
     @IsString()
     @IsOptional()
     liveVideoUrl?: string;
+
+    @IsString()
+    @IsOptional()
+    videoUrl?: string;
 }
