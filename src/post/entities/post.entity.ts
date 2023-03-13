@@ -51,8 +51,8 @@ export class Post extends Document {
     @Prop({ default: null })
     liveVideoUrl?: string;
 
-    @Prop({ default: null })
-    videoUrl?: string;
+    @Prop()
+    videos?: string[];
 
     @Prop()
     isLiked: boolean;
