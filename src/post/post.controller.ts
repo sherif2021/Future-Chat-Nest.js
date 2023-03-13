@@ -30,6 +30,12 @@ export class PostController {
   }
 
 
+  @Get(':id')
+  @UseGuards(UserGuard)
+  getPost(@UserJwt() userAuth: UserAuth, @Param('id') postId: string) {
+    return this.postService.getPost(userAuth.userId, postId);
+  }
+
   @Get()
   @UseGuards(UserGuard)
   getUserPosts(@UserJwt() userAuth: UserAuth, @Query() paginationQueryDto: PaginationQueryDto) {
@@ -39,12 +45,14 @@ export class PostController {
   @Post('like')
   @UseGuards(UserGuard)
   likePost(@UserJwt() userAuth: UserAuth, @Body("postId") postId: string) {
+    console.log(postId);
     return this.postService.likePost(userAuth.userId, postId);
   }
 
   @Post('unlike')
   @UseGuards(UserGuard)
   unLikePost(@UserJwt() userAuth: UserAuth, @Body("postId") postId: string) {
+    console.log(postId);
     return this.postService.unLikePost(userAuth.userId, postId);
   }
 

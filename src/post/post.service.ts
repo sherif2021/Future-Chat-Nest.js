@@ -61,6 +61,17 @@ export class PostService {
     return this.getPostsData(posts, userId);
   }
 
+
+  async getPost(userId: string, postId: string): Promise<Post[]> {
+    const post = await this.postModel.findById(postId)
+      .sort({ 'createdAt': -1 })
+      .select('-userLikes')
+      .populate('user', 'firstName lastName picture').exec();
+
+    if (!post) throw new NotFoundException('This Post Not Found');  
+    return this.getPostsData([post], userId);
+  }
+
   async likePost(userId: string, postId: string): Promise<Post> {
     const post = await this.postModel.findOneAndUpdate({ _id: postId }, { $addToSet: { userLikes: userId } }, { returnOriginal: false })
       .select('-userLikes')
