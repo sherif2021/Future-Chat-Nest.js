@@ -9,7 +9,7 @@ export class CreatePostDto {
 
     @IsArray()
     @IsOptional()
-    pictures: string[];
+    media: any;
 
     @IsArray()
     @IsOptional()
@@ -22,8 +22,4 @@ export class CreatePostDto {
     @IsString()
     @IsOptional()
     liveVideoUrl?: string;
-
-    @IsArray()
-    @IsOptional()
-    videos?: string[];
 }

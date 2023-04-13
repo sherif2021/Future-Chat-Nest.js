@@ -22,7 +22,7 @@ export class PostController {
   editPost(@Param('id') postId: string, @UserJwt() userAuth: UserAuth, @Body() updatePostDto: UpdatePostDto) {
     return this.postService.editPost(postId, userAuth.userId, updatePostDto);
   }
-
+  
   @Delete(':id')
   @UseGuards(UserGuard)
   async deletePost(@Param('id') postId: string, @UserJwt() userAuth: UserAuth) {
@@ -45,14 +45,12 @@ export class PostController {
   @Post('like')
   @UseGuards(UserGuard)
   likePost(@UserJwt() userAuth: UserAuth, @Body("postId") postId: string) {
-    console.log(postId);
     return this.postService.likePost(userAuth.userId, postId);
   }
 
   @Post('unlike')
   @UseGuards(UserGuard)
   unLikePost(@UserJwt() userAuth: UserAuth, @Body("postId") postId: string) {
-    console.log(postId);
     return this.postService.unLikePost(userAuth.userId, postId);
   }
 

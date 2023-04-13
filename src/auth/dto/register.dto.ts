@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from "class-validator";
 
 export class RegisterDto {
 
@@ -20,7 +20,6 @@ export class RegisterDto {
     @IsOptional()
     fcm: string;
 
-
     @IsString()
     @IsOptional()
     about: string;
@@ -28,6 +27,30 @@ export class RegisterDto {
     @IsBoolean()
     @IsOptional()
     isNotificationEnable: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    isChatNotificationEnable: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    isGroupsNotificationEnable: boolean;
+
+    @IsNumber()
+    @IsOptional()
+    profilePicturePrivacy: number;
+
+    @IsNumber()
+    @IsOptional()
+    storyPrivacy: number;
+
+    @IsNumber()
+    @IsOptional()
+    onlinePrivacy: number;
+
+    @IsBoolean()
+    @IsOptional()
+    readReceiptsPrivacy: boolean;
 
     @IsString()
     @IsOptional()

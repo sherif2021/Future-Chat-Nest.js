@@ -85,4 +85,9 @@ export class AuthService {
         else throw new ConflictException('There is an Error while Register, Please try agian.');
 
     }
+
+    async checkPhone(phone: string): Promise<any> {
+        const user = await this.userModel.findOne({ phone }).select('_id').exec();
+        return { exist: user != null };
+    }
 }

@@ -1,8 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Type } from 'class-transformer';
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import { User } from 'src/user/entities/user.entity';
-import * as mongoose from 'mongoose';
 
 @Schema({
     toJSON: {
@@ -21,38 +20,26 @@ import * as mongoose from 'mongoose';
     versionKey: false,
     timestamps: true,
 })
-export class Post extends Document {
-    
+export class GroupMessage extends Document {
+
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
     @Type(() => User)
-    user: User;
+    sender: User;
+
+    @Prop({ required: true })
+    groupId: string;
+
+    @Prop()
+    deleted: string[];
+
+    @Prop({ default: '' })
+    text: string;
 
     @Prop()
     media: Array<any>;
 
     @Prop()
-    tags: string[];
-
-    @Prop()
-    text?: string;
-
-    @Prop()
-    likes: number;
-
-    @Prop()
-    userLikes: string[];
-
-    @Prop({ default: 0 })
-    comments: number;
-
-    @Prop({ default: 0 })
-    shares: number;
-
-    @Prop({ default: null })
-    liveVideoUrl?: string;
-
-    @Prop()
-    isLiked: boolean;
+    tempId?: string;
 }
 
-export const PostSchema = SchemaFactory.createForClass(Post);
+export const GroupMessageSchema = SchemaFactory.createForClass(GroupMessage);

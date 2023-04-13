@@ -7,11 +7,14 @@ import { Post } from 'src/post/entities/post.entity';
 import { User } from 'src/user/entities/user.entity';
 import { PaginationQueryDto } from 'src/common/pagination-query.dto';
 import { CreateReplayDto } from './dto/create-replay.dto';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationTypes } from 'src/common/notification-types';
 
 @Injectable()
 export class CommentService {
 
   constructor(
+    private notificationService: NotificationService,
     @InjectModel(Comment.name) private commentModel: Model<Comment>,
     @InjectModel(Post.name) private postModel: Model<Post>,
     @InjectModel(User.name) private userModel: Model<User>
@@ -20,7 +23,7 @@ export class CommentService {
   async createComment(userId: string, createCommentDto: CreateCommentDto): Promise<Comment> {
 
     const data = await Promise.all([
-      this.postModel.findById(createCommentDto.postId).select('_id').exec(),
+      this.postModel.findById(createCommentDto.postId).select('_id').populate('user', 'firstName lastName picture').exec(),
       this.userModel.findOne({ _id: userId, isBlock: false }).select('firstName lastName picture').exec()
     ])
 
@@ -40,13 +43,22 @@ export class CommentService {
     comment.likes = 0;
 
     this.calculatePostComments(createCommentDto.postId);
+
+    if (userId != post.user.id) {
+      this.notificationService.sendNotifcation(
+        post.user.id,
+        NotificationTypes.newComment,
+        post.id,
+        userId,
+      );
+    }
     return comment;
   }
 
   async createReplay(userId: string, createReplayDto: CreateReplayDto): Promise<Comment> {
 
     const data = await Promise.all([
-      this.commentModel.findOne({ _id: createReplayDto.commentId, isReplay: false }).select('_id').exec(),
+      this.commentModel.findOne({ _id: createReplayDto.commentId, isReplay: false }).select('_id').populate('user', 'firstName lastName picture').exec(),
       this.userModel.findOne({ _id: userId, isBlock: false }).select('firstName lastName picture').exec()
     ])
 
@@ -65,6 +77,15 @@ export class CommentService {
     comment.isLiked = false;
 
     this.calculateCommentReplies(createReplayDto.commentId);
+
+    if (userId != parentComment.user.id) {
+      this.notificationService.sendNotifcation(
+        parentComment.user.id,
+        NotificationTypes.newReplay,
+        parentComment.id,
+        userId,
+      );
+    }
     return comment;
   }
 
@@ -86,9 +107,20 @@ export class CommentService {
     if (comment.isReplay == false) {
       this.commentModel.deleteMany({ parentId: commentId, isReplay: true }).exec();
       this.calculatePostComments(comment.parentId);
-    }else{
+    } else {
       this.calculateCommentReplies(comment.parentId);
     }
+  }
+
+  async getComment(commentId: string, userId: string): Promise<Comment> {
+    const comment = await this.commentModel.findOne({ _id: commentId, isReplay: false })
+      .select('-userLikes')
+      .populate('user', 'firstName lastName picture').exec();
+
+
+    if (!comment) throw new NotFoundException();
+
+    return (await this.getCommentsData([comment], userId))[0];
   }
 
   async getPostComments(postId: string, userId: string, paginationQueryDto: PaginationQueryDto): Promise<Comment[]> {

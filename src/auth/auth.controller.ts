@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -16,5 +16,10 @@ export class AuthController {
   @Post('register')
   register(@Body() registerDto: RegisterDto): Promise<Object> {
     return this.authService.register(registerDto);
+  }
+
+  @Get('check-phone/:phone')
+  checkPhone(@Param('phone') phone: string) {
+    return this.authService.checkPhone(phone);
   }
 }

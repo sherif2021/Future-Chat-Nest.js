@@ -4,7 +4,7 @@ export class UpdatePostDto {
 
     @IsArray()
     @IsOptional()
-    pictures: string[];
+    media: Object[];
 
     @IsString()
     @IsOptional()

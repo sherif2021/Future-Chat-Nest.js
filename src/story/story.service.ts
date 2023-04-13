@@ -7,12 +7,14 @@ import mongoose, { Model } from 'mongoose';
 import { Report } from 'src/report/entities/report.entity';
 import { User } from 'src/user/entities/user.entity';
 import { PaginationQueryDto } from 'src/common/pagination-query.dto';
+import { Contact } from 'src/chat/entities/contact.entity';
 
 @Injectable()
 export class StoryService {
 
   constructor(@InjectModel(Story.name) private storyModel: Model<Story>,
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Contact.name) private contactModel: Model<Contact>,
   ) { }
 
   async createStory(userId: string, createStoryDto: CreateStoryDto): Promise<Story> {
@@ -43,8 +45,23 @@ export class StoryService {
 
   async getStoreis(userId: string, paginationQueryDto: PaginationQueryDto): Promise<User[]> {
 
+    const userData = await Promise.all([
+      this.userModel.findOne({ _id: userId, isBlock: false }).select('unFollowUsers').exec(),
+      this.contactModel.find({ ownerId: userId, isGroup: false }).distinct('contentId'),
+    ]);
+
+    const user = userData[0];
+    const contacts = userData[1];
+
+    if (!user) return [];
+
+    const concatdIds: mongoose.Types.ObjectId[] = contacts.filter(e => !user.unFollowUsers.includes(e)).map(e=> new mongoose.Types.ObjectId(e));
+
+    concatdIds.push(new mongoose.Types.ObjectId(userId));
+
     const userStoreis = await this.storyModel.aggregate(
       [
+        { '$match': { user: { $in: concatdIds} } },
         { "$group": { "_id": "$user" } },
         { "$skip": paginationQueryDto.offset },
         { "$limit": paginationQueryDto.limit }
@@ -72,7 +89,7 @@ export class StoryService {
         }
       }
       user.stories = allUserStories;
-      
+
     }
     return users;
   }
@@ -84,7 +101,9 @@ export class StoryService {
 
     if (!story) throw new NotFoundException('This Story Not Found.');
 
-    return (await this.getStoriesData([story], userId))[0];
+    await this.getStoriesData([story], userId);
+
+    return story;
 
   }
 

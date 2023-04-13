@@ -2,6 +2,8 @@ import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ServeStaticExceptionFilter } from './common/serve-static-exception-filter';
+import { SocketIOAdapter } from './chat/common/socket-adapter';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,6 +23,16 @@ async function bootstrap() {
       },
     }),
   );
-  await app.listen(7000);
+  const configService = app.get(ConfigService);
+  const clientPort = parseInt(configService.get('CLIENT_PORT'));
+
+  app.enableCors({
+    origin: [
+      `http://localhost:${clientPort}`,
+      new RegExp(`/^http:\/\/192\.168\.1\.([1-9]|[1-9]\d):${clientPort}$/`),
+    ],
+  });
+  app.useWebSocketAdapter(new SocketIOAdapter(app, configService));
+  await app.listen(process.env.PORT);
 }
 bootstrap();

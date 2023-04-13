@@ -10,13 +10,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { UploadModule } from './upload/upload.module';
 import { PostModule } from './post/post.module';
 import { CommentModule } from './comment/comment.module';
 import { ReportModule } from './report/report.module';
 import { StoryModule } from './story/story.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ChatModule } from './chat/chat.module';
+import { PirvacyModule } from './privacy/privacy.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -52,13 +53,14 @@ import { ChatModule } from './chat/chat.module';
     MongooseModule.forRoot(process.env.MONGODB_URI),
     AuthModule,
     UserModule,
-    UploadModule,
     PostModule,
     CommentModule,
     ReportModule,
     StoryModule,
     ScheduleModule.forRoot(),
     ChatModule,
+    PirvacyModule,
+    NotificationModule,
   ],
   controllers: [],
   providers: [

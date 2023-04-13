@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
@@ -7,13 +7,19 @@ import mongoose, { Model } from 'mongoose';
 import { User } from 'src/user/entities/user.entity';
 import { PaginationQueryDto } from 'src/common/pagination-query.dto';
 import { PostShare } from './entities/share-post.entity';
+import { Contact } from 'src/chat/entities/contact.entity';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationTypes } from 'src/common/notification-types';
 
 @Injectable()
 export class PostService {
 
-  constructor(@InjectModel(Post.name) private postModel: Model<Post>,
+  constructor(
+    private notificationService: NotificationService,
+    @InjectModel(Post.name) private postModel: Model<Post>,
     @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(PostShare.name) private postShareModel: Model<PostShare>
+    @InjectModel(Contact.name) private contactModel: Model<Contact>,
+    @InjectModel(PostShare.name) private postShareModel: Model<PostShare>,
   ) { }
 
   async createPost(userId: string, createPostDto: CreatePostDto): Promise<Post> {
@@ -30,6 +36,18 @@ export class PostService {
     post.user = user;
     post.isLiked = false;
     post.likes = 0;
+
+
+    this.contactModel.find({ ownerId: userId, isGroup: false }).then(users => {
+      for (const user of users) {
+        this.notificationService.sendNotifcation(
+          user.contentId,
+          NotificationTypes.newPost,
+          post.id,
+          userId,
+        );
+      }
+    })
     return post;
   }
 
@@ -51,7 +69,24 @@ export class PostService {
   }
 
   async getUserPosts(userId: string, paginationQueryDto: PaginationQueryDto): Promise<Post[]> {
-    const posts = await this.postModel.find()
+
+    const userData = await Promise.all([
+      this.userModel.findOne({ _id: userId, isBlock: false }).select('unFollowUsers').exec(),
+      this.contactModel.find({ ownerId: userId, isGroup: false }).distinct('contentId'),
+    ]);
+
+    const user = userData[0];
+    const contacts = userData[1];
+
+    if (!user) return [];
+
+    const concatdIds: mongoose.Types.ObjectId[] = contacts.filter(e => !user.unFollowUsers.includes(e)).map(e => new mongoose.Types.ObjectId(e));
+
+    concatdIds.push(new mongoose.Types.ObjectId(userId));
+
+    const posts = await this.postModel.find({
+      user: { $in: concatdIds }
+    })
       .sort({ 'createdAt': -1 })
       .skip(paginationQueryDto.offset)
       .limit(paginationQueryDto.limit)
@@ -62,14 +97,14 @@ export class PostService {
   }
 
 
-  async getPost(userId: string, postId: string): Promise<Post[]> {
+  async getPost(userId: string, postId: string): Promise<Post> {
     const post = await this.postModel.findById(postId)
       .sort({ 'createdAt': -1 })
       .select('-userLikes')
       .populate('user', 'firstName lastName picture').exec();
 
-    if (!post) throw new NotFoundException('This Post Not Found');  
-    return this.getPostsData([post], userId);
+    if (!post) throw new NotFoundException('This Post Not Found');
+    return (await this.getPostsData([post], userId))[0];
   }
 
   async likePost(userId: string, postId: string): Promise<Post> {
@@ -82,6 +117,14 @@ export class PostService {
 
     // send notication to post owner
 
+    if (userId != post.user.id) {
+      this.notificationService.sendNotifcation(
+        post.user.id,
+        NotificationTypes.likePost,
+        post.id,
+        userId,
+      )
+    }
     return (await this.getPostsData([post], userId))[0];
 
   }
@@ -113,6 +156,15 @@ export class PostService {
     const shares = await this.calculatePostShares(postId);
     post.shares = shares;
 
+
+    if (userId != post.user.id) {
+      this.notificationService.sendNotifcation(
+        post.user.id,
+        NotificationTypes.sharePost,
+        post.id,
+        userId,
+      )
+    }
 
     // send notifcation
     return post;

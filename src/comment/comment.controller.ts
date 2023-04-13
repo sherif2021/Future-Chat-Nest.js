@@ -29,6 +29,12 @@ export class CommentController {
     return this.commentService.getCommentReplies(postId, userAuth.userId, paginationQueryDto);
   }
 
+  @Get('item/:id')
+  @UseGuards(UserGuard)
+  getComment(@Param('id') commentId: string, @UserJwt() userAuth: UserAuth) {
+    return this.commentService.getComment(commentId, userAuth.userId);
+  }
+
   @Get(':id')
   @UseGuards(UserGuard)
   getPostComment(@Param('id') postId: string, @UserJwt() userAuth: UserAuth, @Query() paginationQueryDto: PaginationQueryDto) {
