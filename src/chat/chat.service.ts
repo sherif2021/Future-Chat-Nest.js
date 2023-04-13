@@ -306,7 +306,7 @@ export class ChatService {
   }
 
   existGroup(userId: string, groupId: string) {
-    this.contactModel.deleteOne({ contentId: groupId, isGroup: true }).exec();
+    this.contactModel.deleteOne({ ownerId: userId, contentId: groupId, isGroup: true }).exec();
     this.groupMessageModel.deleteMany({ sender: userId, groupId }).exec();
     this.groupModel.updateOne({
       groupId,

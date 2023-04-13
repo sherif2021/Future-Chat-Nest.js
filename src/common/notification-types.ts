@@ -9,4 +9,6 @@ export const NotificationTypes = {
     videoCallMissing: 6,
     voiceCallMissing: 7,
     likePost: 8,
+    tagPost : 9,
+    addToGroup: 10,
 };
