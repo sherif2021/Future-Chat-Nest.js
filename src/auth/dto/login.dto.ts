@@ -9,4 +9,8 @@ export class LoginDto {
     @IsString()
     @IsOptional()
     fcm?: string;
+
+    @IsString()
+    @IsOptional()
+    language?: string;
 }

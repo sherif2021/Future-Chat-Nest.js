@@ -55,4 +55,8 @@ export class RegisterDto {
     @IsString()
     @IsOptional()
     picture? : string;
+
+    @IsString()
+    @IsOptional()
+    language? : string;
 }

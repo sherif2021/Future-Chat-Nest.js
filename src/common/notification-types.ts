@@ -11,4 +11,5 @@ export const NotificationTypes = {
     likePost: 8,
     tagPost : 9,
     addToGroup: 10,
+    storyExpired : 11,
 };

@@ -37,6 +37,9 @@ export class AuthService {
                     if (loginDto.fcm)
                         this.userModel.updateOne({ _id: user.id }, { $addToSet: { fcm: loginDto.fcm } }).exec();
 
+                    if (loginDto.language)
+                        this.userModel.updateOne({ _id: user.id }, { language: loginDto.language }).exec();
+
                     const payload = { userId: user.id, roles: user.roles };
 
                     return {
@@ -46,7 +49,7 @@ export class AuthService {
             }
         }
         catch (e) { }
-        
+
         if (isBlocked) throw new BadRequestException('Your Account has been Blocked.');
         else
             throw new ConflictException('There is an Error while Register, Please try agian.');

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, UseGuards, Headers } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards, Headers, Delete } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserGuard } from 'src/auth/gurards/user.guard';
 import { UserAuth } from 'src/auth/common/user-auth';
@@ -16,6 +16,12 @@ export class UserController {
   @UseGuards(UserGuard)
   getUser(@UserJwt() userAuth: UserAuth): Promise<User> {
     return this.userService.getUser(userAuth.userId);
+  }
+
+  @Delete()
+  @UseGuards(UserGuard)
+  deleteUser(@UserJwt() userAuth: UserAuth) {
+    return this.userService.deleteUser(userAuth.userId);
   }
 
   @Patch()

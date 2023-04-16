@@ -28,6 +28,19 @@ export class UserService {
     return user;
   }
 
+  async deleteUser(userId: string) {
+
+    this.userModel.deleteOne({ _id: userId }).exec();
+    this.userModel.updateMany({}, {
+      $pull: {
+        block: userId,
+        unFollowUsers: userId,
+      }
+    }).exec();
+
+    
+  }
+
   async editUser(userId: string, updateUserDto: UpdateUserDto): Promise<User> {
 
     const user = await this.userModel.findOneAndUpdate({ _id: userId, isBlock: false }, updateUserDto, { returnOriginal: false }).select('-isBlock -fcm -roles -unFollowUsers').exec();

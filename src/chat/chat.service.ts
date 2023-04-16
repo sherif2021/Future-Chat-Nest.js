@@ -392,12 +392,13 @@ export class ChatService {
 
     const data = await Promise.all([
       this.contactModel.findOne({ ownerId: message.receiverId, isGroup: false, contentId: message.senderId, isNotificationMuted: false }).exec(),
-      this.userModel.findOne({ _id: message.receiverId, isBlock: false, block: { $nin: [message.senderId] } }).select('_id').exec(),
+      this.userModel.findOne({ _id: message.receiverId, isBlock: false, block: { $nin: [message.senderId] } }).select('_id isChatNotificationEnable').exec(),
     ]);
+    
     const contact = data[0];
     const user = data[1];
 
-    if (!contact || !user) return;
+    if (!contact || !user || !user.isChatNotificationEnable) return;
 
     this.notificationService.sendNotifcation(
       message.receiverId,
@@ -418,9 +419,15 @@ export class ChatService {
 
       if (member != message.sender.id) {
 
-        const contact = await this.contactModel.findOne({ ownerId: member, contentId: group.id, isGroup: true, isNotificationMuted: false }).exec();
+        const data = await Promise.all([
+          this.contactModel.findOne({ ownerId: member, contentId: group.id, isGroup: true, isNotificationMuted: false }).exec(),
+          this.userModel.findOne({ _id: member, isBlock: false  }).select('_id isGroupsNotificationEnable').exec(),
+        ]);
 
-        if (contact) {
+        const user = data[1];
+        const contact = data[0];
+
+        if (contact && user.isGroupsNotificationEnable) {
 
           this.notificationService.sendGroupMessageNotifcation(
             member,
